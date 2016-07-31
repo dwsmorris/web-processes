@@ -5,6 +5,10 @@
 		// initialize
 		fn();
 
-		return {};
+		return {
+			send: function (message) {
+				return message;
+			}
+		};
 	};
 </script>

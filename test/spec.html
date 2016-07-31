@@ -37,6 +37,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 					webProcesses.spawn(fn);
 					expect(value).to.equal(4);
 				});
+
+				describe("spawned process", function () {
+					describe("send", function () {
+						it("returns the sent message", function () {
+							var message = "hello";
+
+							expect(webProcesses.spawn(function () { }).send(message)).to.equal(message);
+						});
+					});
+				});	
 			});
 		});
 	</script>
