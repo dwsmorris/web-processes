@@ -27,6 +27,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 				it("returns an object", function () {
 					expect(_.isObject(webProcesses.spawn(function() {}))).to.equal(true);
 				});
+
+				it("executes function with no parameters on spawning", function () {
+					var value;
+					var fn = function () {
+						value = 4;
+					};
+
+					webProcesses.spawn(fn);
+					expect(value).to.equal(4);
+				});
 			});
 		});
 	</script>
