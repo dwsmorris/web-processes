@@ -1,0 +1,333 @@
+﻿<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+	<script src="../bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+	<script src="../bower_components/web-component-tester/browser.js"></script>
+
+	<!-- Step 1: import the element to test -->
+	<link rel="import" href="../bower_components/ramda-import/ramda-import.html">
+	<link rel="import" href="../bower_components/lodash-import/lodash-import.html">
+	<link rel="import" href="../components/extend.html">
+</head>
+<body>
+	<script>
+		window.addEventListener('WebComponentsReady', function () {
+			var checkResult = function (script, expectedResult, message) {
+				it(JSON.stringify(script) + " => result = " + JSON.stringify(expectedResult) + " // " + message, function () {
+					var object = {};
+					PatternScript.extend(object, script);
+
+					expect(object.result).to.deep.equal(expectedResult);
+				});
+			};
+			+
+			/*
+			checkResult({
+				"match a a"	: "'matched'",
+				"result"	: "match 1 2"
+			}, undefined, "enforce constraints of same symbol in pattern"); // matches #1
+			*/
+			/*
+			checkResult({
+				"a"					: "1",
+				"match ([] 1 a 3)"	: "a",
+				"result"			: "[] (match ([] 1 2 3)) a"
+			}, [2, 1], "does not capture variables"); // problematic: 'a' can now reference a local definition so should be substituted
+			*/
+			
+			/*
+			checkResult({
+				"result": "2"
+			}, 2, "number");
+			
+			checkResult({
+				"result": "false"
+			}, false, "false");
+			
+			checkResult({
+				"result": "([] 2)"
+			}, [2], "single member array");
+			
+			checkResult({
+				"result": "([] 2 3)"
+			}, [2, 3], "multi-member array");
+			
+			checkResult({
+				"result": "([] ([] 1 2 3))"
+			}, [[1,2,3]], "embedded array");
+			
+			checkResult({
+				"result": "([] 2 (+ 1 2) 4)"
+			}, [2, 3, 4], "evaluation within root level bracketed array");
+			
+			checkResult({
+				"result": "'hello'"
+			}, "hello", "string literal");
+			
+			checkResult({
+				"result": "(+ 2 3)"
+			}, 5, "bracketted function application");
+			
+			checkResult({
+				"result": "(- 10 (* 2 3))"
+			}, 4, "compound expression");
+			
+			checkResult({
+				"two"	: "2",
+				"result": "(+ two 1)"
+			}, 3, "local expression");
+			
+			checkResult({
+				"result": "((+ 2) 3)"
+			}, 5, "partial application");
+			
+			checkResult({
+				"plus2"	: "(+ 2)",
+				"result": "(plus2 3)"
+			}, 5, "local partial");
+			
+			checkResult({
+				"plus"	: "+",
+				"result": "(plus 2 3)"
+			}, 5, "js function assignment");
+			
+			checkResult({
+				"(square x)"	: "(* x x)",
+				"result"		: "(square 3)"
+			}, 9, "named parameters");
+			
+			checkResult({
+				"result": "(Math.sqrt 9)"
+			}, 3, "js namespace functions");
+			
+			checkResult({
+				"(plus x y)"	: "(+ x y)",
+				"result"		: "(plus 2 3)"
+			}, 5, "define multiple function arguments");
+			*/
+			checkResult({
+				"(hypotenuse x y)"	: "(Math.sqrt (+ (* x x) (* y y)))",
+				"result"			: "((hypotenuse 3) 4)"
+			}, 5, "partial application of lisp functions (no rewrite possible)");
+			/*
+			checkResult({
+				"result": "(_.isNumber 3)"
+			}, true, "access to external namespaces");
+			
+			checkResult({
+				"result": "(R.reduce + 0 ([] 1 2 3))"
+			}, 6, "passing js functions to higher order js function");
+			
+			checkResult({
+				"(square x)"	: "(* x x)",
+				"result"		: "(R.map square ([] 2 3))"
+			}, [4, 9], "pass lisp function higher order js function");
+			
+			checkResult({
+				"(factorial x)"	: "(if (< x 2) 1 (* x (factorial (- x 1)))",
+				"result"		: "(factorial 4)"
+			}, 24, "recursive lisp function");
+			
+			checkResult({
+				"(match 1)"	: "'too low'",
+				"(match x)"	: "x",
+				"result"	: "(match 1)"
+			}, "too low", "pattern match against constant");
+
+			checkResult({
+				"(match 1)"	: "'too low'",
+				"(match x)"	: "x",
+				"result"	: "(match 2)"
+			}, 2, "pattern match against trivial variable");
+
+			checkResult({
+				"(match 1)"	: "'too low'",
+				"(match x)"	: "(* x x)",
+				"result"	: "(match 2)"
+			}, 4, "pattern match against ast equation");
+
+			checkResult({
+				"(match 1)"	: "'matched'",
+				"(match _)"	: "'default'",
+				"result"	: "(match 2)"
+			}, 'default', "pattern match fallthrough default");
+
+			checkResult({
+				"(match 1)"	: "'matched'",
+				"result"	: "(match 2)"
+			}, undefined, "pattern match returns undefined when patterns exhausted");
+			
+			checkResult({
+				"(match ([] 0 0 0))"	: "0",
+				"(match ([] a b c))"	: "(+ (+ a b) c)",
+				"result"				: "(match ([] 1 2 3))"
+			}, 6, "pattern match deconstructs list");
+
+			checkResult({
+				"(reciprocal 0 _)"	: "'undefined'",
+				"(reciprocal x y)"	: "(/ y x)",
+				"half"				: "(reciprocal 2)",
+				"result"			: "(half 10)"
+			}, 5, "curried pattern match 1");
+
+			checkResult({
+				"(reciprocal 0 _)": "'undefined'",
+				"(reciprocal x y)": "(/ y x)",
+				"divideByZero": "(reciprocal 0)",
+				"result": "(divideByZero 10)"
+			}, 'undefined', "curried pattern match 2");
+
+			checkResult({
+				"(match a 2 b)"	: "(+ a b)",
+				"result"		: "(match 1 2 3)"
+			}, 4, "match literals in a list");
+
+			checkResult({
+				"(match a 1 b)"	: "(+ a b)",
+				"result"		: "(match 1 2 3)"
+			}, undefined, "rejects integer mismatch in list");
+
+			checkResult({
+				"(match ([] a b))"	: "(+ a b)",
+				"result"			: "(match (1 2 3))"
+			}, undefined, "rejects mismatched arguments in a list");
+
+			checkResult({
+				"(match a b)"	: "(* b b)",
+				"result"		: "(match 1 2 3)"
+			}, 4, "non-pattern matched function ignores extra arguments");
+
+			checkResult({
+				"(match 1 b)"	: "(* b b)",
+				"result"		: "(match 1 2 3)"
+			}, undefined, "pattern matched function fails on extra arguments");
+			
+			checkResult({
+				"(match ([] a))"	: "a",
+				"result"			: "(match ([] ([] 1 2 3)))"
+			}, [1, 2, 3], "match embedded list in a list");
+						
+			checkResult({
+				"(match ([] ([] a)))"	: "a",
+				"result"				: "(match ([] ([] 1 2 3)))"
+			}, undefined, "rejects mismatched args in embedded list");
+
+			checkResult({
+				"(match ([] 1 _ _))"	: "12",
+				"result"				: "(match ([] 1 'cat' 'dog'))"
+			}, 12, "match multiple wildcards");
+
+			checkResult({
+				"result": "([] ([] 1) ([] 2))"
+			}, [[1], [2]], "encases unencapsulated array of arrays");
+
+			checkResult({
+				"(factorial 1)"	: "1",
+				"(factorial n)"	: "(* n (factorial (- n 1)))",
+				"result"		: "(factorial 4)"
+			}, 24, "simple pattern matched factorial");
+			
+			checkResult({
+				"(whatIs (_.isNumber x))"		: "(+ x ' is a number')",
+				"(whatIs (_.isString x))"		: "(+ x ' is a string')",
+				"result"						: "([] (whatIs 2) (whatIs 'hello'))"
+			}, ['2 is a number', 'hello is a string']);
+
+			checkResult({
+				"(factorial 1)"				: "1",
+				"(factorial (< x 1))"		: "undefined",
+				"(factorial n)"				: "(* n (factorial (- n 1)))",
+				"result"					: "([] (factorial 0) (factorial 3))"
+			}, [undefined, 6], "factorial with negative range guard");
+
+			checkResult({
+				"(quotient _ (=== _ 0))"	: "'undefined'",
+				"(quotient x y)"			: "(/ x y)",
+				"result"					: "([] (quotient 2 0) (quotient 8 2))"
+			}, ['undefined', 4], "guard range in second, anonymous parameter");
+			
+			checkResult({
+				"(thunk)": "1",
+				"result": "(thunk)"
+			}, 1, "parameterless function call");
+
+			checkResult({
+				"(thunk)": "1",
+				"result": "(thunk 2 3)"
+			}, 1, "extraenous arguments to a thunk ignored");
+
+			checkResult({
+				"(thunk)"		: "(Math.sqrt 9)",
+				"result"		: "(thunk)"
+			}, 3, "thunk containing native javascript function");
+
+			checkResult({
+				"(thunk)"		: "(+ 2)",
+				"result"		: "((thunk) 3)"
+			}, 5, "thunk containing internal javascript function");
+			
+			checkResult({
+				"result": "([])"
+			}, [], "empty array");
+
+			checkResult({
+				"result": "(. ([] 1 2 3) 1)"
+			}, 2, "indexing array");
+
+			checkResult({
+				"result": "({})"
+			}, {}, "empty object");
+
+			checkResult({
+				"result": "({} 'a' 1 'b' 2)"
+			}, { a: 1, b: 2 }, "initialized object");
+
+			checkResult({
+				"result": "(. ({} 'a' 1 'b' 2) 'b')"
+			}, 2, "indexed object");
+
+			checkResult({
+				"(one)"		: "1",
+				"object"	: "({} 'a' one)",
+				"result"	: "((. object 'a'))"
+			}, 1, "method activation");
+
+			checkResult({
+				"(twice x)"	: "(* x 2)",
+				"object"	: "({} 'twice' twice)",
+				"result"	: "((. object 'twice') 3)"
+			}, 6, "parameterized method activation");
+			
+			checkResult({
+				"(or x y)"		: "(if x true (if y true false))",
+				"result"		: "(or true (throw))"
+			}, true, "macro definition calling another macro");
+			
+			checkResult({
+				"(ignoreFirst a b)"		: "b",
+				"result"					: "(ignoreFirst (throw) true)"
+			}, true, "macro definition controlling evaluation order");
+
+			checkResult({
+				"result": "(/ 1 0)"
+			}, Infinity, "division by zero");
+
+			checkResult({
+				"result": "(if true 10 (throw))"
+			}, 10, "macro execution");
+			*/
+		});
+	</script>
+</body>
+</html>
