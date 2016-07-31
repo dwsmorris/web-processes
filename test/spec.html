@@ -88,6 +88,27 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 							expect(sendingProcess.flush()).to.deep.equal(["How about no?"]);
 						});
+
+						it("can supress termination of the process", function () {
+							var dolphin3 = function (message) {
+								if (message) {
+									if (message[1] === "do_a_flip") {
+										message[0].send("How about no?");
+										return true;
+									} else if (message[1] === "fish") message[0].send("So long and thanks for all the fish!");
+									else if (message) {
+										message[0].send("Heh, we're smarter than you humans.");
+										return true;
+									}
+								}
+							};
+							var sendingProcess = webProcesses.spawn(function () { });
+							var dolphinProcess = webProcesses.spawn(dolphin3);
+
+							dolphinProcess.send(dolphinProcess.send([sendingProcess, "do_a_flip"]));
+
+							expect(sendingProcess.flush()).to.deep.equal(["How about no?", "How about no?"]);
+						});
 					});
 
 					describe("flush", function () {
