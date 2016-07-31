@@ -25,7 +25,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 		window.addEventListener('WebComponentsReady', function () {
 			describe("spawn", function() {
 				it("returns an object", function () {
-					expect(_.isObject(webProcesses.spawn(function() {}))).to.equal(true);
+					expect(_.isObject(webProcesses.spawn(function() {}))).to.be.true;
 				});
 
 				it("executes function with no parameters on spawning", function () {
@@ -39,11 +39,29 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 				});
 
 				describe("spawned process", function () {
+					var fixture = function () {
+						return {
+							dolphin1: function (message) {
+								if (message === "do_a_flip") this.output("How about no?");
+								else if (message === "fish") this.output("So long and thanks for all the fish!");
+								else if (message) this.output("Heh, we're smarter than you humans.");
+							},
+							output: sinon.spy()
+						};
+					};
+
 					describe("send", function () {
 						it("returns the sent message", function () {
 							var message = "hello";
 
 							expect(webProcesses.spawn(function () { }).send(message)).to.equal(message);
+						});
+
+						it("processes the message", function () {
+							var fixture1 = fixture();
+							webProcesses.spawn(_.bind(fixture1.dolphin1, fixture1)).send("oh, hello dolphin!");
+
+							expect(fixture1.output.calledWith("Heh, we're smarter than you humans.")).to.be.true;
 						});
 					});
 
@@ -56,6 +74,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 							expect(webProcess.flush()).to.deep.equal(["hello", "double"]);
 						});
 					});
+
+
 				});	
 			});
 		});

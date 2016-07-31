@@ -11,6 +11,8 @@
 			send: function (message) {
 				mailbox.push(message);
 
+				fn(message);
+
 				return message;
 			},
 			flush: function () {
