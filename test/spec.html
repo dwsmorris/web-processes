@@ -72,6 +72,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 							expect(fixture1.output).to.have.been.calledOnce;
 						});
+
+						it("can support passing a 'from' process", function () {
+							var dolphin2 = function (message) {
+								if (message) {
+									if (message[1] === "do_a_flip") message[0].send("How about no?");
+									else if (message[1] === "fish") message[0].send("So long and thanks for all the fish!");
+									else if (message) message[0].send("Heh, we're smarter than you humans.");
+								}
+							};
+							var sendingProcess = webProcesses.spawn(function () { });
+							var dolphinProcess = webProcesses.spawn(dolphin2);
+
+							dolphinProcess.send([sendingProcess, "do_a_flip"]);
+
+							expect(sendingProcess.flush()).to.deep.equal(["How about no?"]);
+						});
 					});
 
 					describe("flush", function () {
