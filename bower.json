@@ -11,11 +11,12 @@
     "/.*",
     "/test/"
   ],
-  "dependencies": {
-    "ramda-import": "dwsmorris/ramda-import",
-    "webcomponentsjs": "polymer/webcomponentsjs#^0.7.22",
-    "lodash-import": "dwsmorris/lodash-import"
-  },
+	"dependencies": {
+		"polymer": "Polymer/polymer#^1.2.0",
+		"ramda-import": "dwsmorris/ramda-import",
+		"webcomponentsjs": "polymer/webcomponentsjs#^0.7.22",
+		"lodash-import": "dwsmorris/lodash-import"
+	},
   "devDependencies": {
     "web-component-tester": "^4.0.0"
   }
