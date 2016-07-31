@@ -5,9 +5,16 @@
 		// initialize
 		fn();
 
+		var mailbox = [];
+
 		return {
 			send: function (message) {
+				mailbox.push(message);
+
 				return message;
+			},
+			flush: function () {
+				return mailbox;
 			}
 		};
 	};

@@ -46,6 +46,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 							expect(webProcesses.spawn(function () { }).send(message)).to.equal(message);
 						});
 					});
+
+					describe("flush", function () {
+						it("returns the mailbox", function () {
+							var webProcess = webProcesses.spawn(function () { });
+							webProcess.send("hello");
+							webProcess.send("double");
+
+							expect(webProcess.flush()).to.deep.equal(["hello", "double"]);
+						});
+					});
 				});	
 			});
 		});
