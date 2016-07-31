@@ -61,7 +61,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 							var fixture1 = fixture();
 							webProcesses.spawn(_.bind(fixture1.dolphin1, fixture1)).send("oh, hello dolphin!");
 
-							expect(fixture1.output.calledWith("Heh, we're smarter than you humans.")).to.be.true;
+							expect(fixture1.output).to.have.been.calledWith("Heh, we're smarter than you humans.");
+						});
+
+						it("terminates process after execution", function () {
+							var fixture1 = fixture();
+							var process = webProcesses.spawn(_.bind(fixture1.dolphin1, fixture1));
+							process.send("hello");
+							process.send("hello again");
+
+							expect(fixture1.output).to.have.been.calledOnce;
 						});
 					});
 

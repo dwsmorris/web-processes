@@ -6,12 +6,12 @@
 		fn();
 
 		var mailbox = [];
+		var terminated = false;
 
 		return {
 			send: function (message) {
 				mailbox.push(message);
-
-				fn(message);
+				if (!terminated) terminated = (fn(message) === undefined);
 
 				return message;
 			},
